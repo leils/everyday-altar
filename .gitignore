@@ -1,0 +1,18 @@
+# Local development
+node_modules/
+.env
+.env.local
+
+# Firebase Admin SDK service account (never commit)
+*-service-account*.json
+serviceAccount*.json
+
+# Agent / AI tooling
+agent-reference/
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+*.swp

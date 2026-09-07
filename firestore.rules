@@ -1,0 +1,15 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /entries/{entryId} {
+      // Anyone can read entries.
+      allow read: if true;
+
+      // No client-side writes. All writes go through the import script
+      // (Admin SDK, bypasses rules) or a future authenticated write page.
+      allow write: if false;
+    }
+
+  }
+}
