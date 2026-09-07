@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>everyday altar</title>
+  <link rel="stylesheet" href="css/site.css" />
+</head>
+<body>
+
+  <header>
+    <h1>everyday altar</h1>
+    <p>A daily creative practice — something made, documented, every day.</p>
+  </header>
+
+  <main>
+    <p id="empty-state" hidden>No posts yet.</p>
+    <p id="error-state" hidden>Could not load posts. Check the browser console for details.</p>
+
+    <div id="feed"></div>
+
+    <button id="load-more">Load more</button>
+  </main>
+
+  <footer>
+    <p><a href="https://leiac.me">made by leiac.me</a></p>
+  </footer>
+
+  <script type="module" src="js/feed.js"></script>
+</body>
+</html>

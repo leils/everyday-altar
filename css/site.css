@@ -1,0 +1,65 @@
+/* Minimal functional styles. No visual language applied yet. */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap');
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 24px;
+  max-width: 1024px;
+  margin-inline: auto;
+  background-color: bisque;
+  font-family: 'IBM Plex Mono', monospace;
+}
+
+@media (max-width: 600px) {
+  body {
+    padding: 8px;
+    max-width: 90vw;
+  }
+}
+
+/* Feed entries */
+.feed {
+}
+
+article {
+  margin-bottom: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #ccc;
+  background-color: white;
+}
+
+article h2 {
+  margin-top: 0;
+}
+
+/* Images */
+
+.post-images img {
+  display: block;
+  max-width: 90%;
+  margin-bottom: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .post-images img {
+    max-width: 100%;
+  }
+}
+
+/* Break day label */
+
+.break-label {
+  font-style: italic;
+  color: #666;
+}
+
+/* Load more button */
+
+#load-more {
+  display: block;
+  margin: 1rem 0;
+}

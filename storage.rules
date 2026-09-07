@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    match /posts/{allPaths=**} {
+      // Anyone can read post images.
+      allow read: if true;
+
+      // No client-side writes. Upload goes through the import script
+      // (Admin SDK) or a future authenticated write page.
+      allow write: if false;
+    }
+
+  }
+}
