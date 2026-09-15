@@ -10,7 +10,7 @@ body {
   padding: 24px;
   max-width: 1024px;
   margin-inline: auto;
-  background-color: bisque;
+  background-color: whitesmoke;
   font-family: 'IBM Plex Mono', monospace;
 }
 
@@ -31,6 +31,7 @@ h1 {
   flex-direction: row;
   flex-wrap: wrap;
   gap: 10px;
+  align-items: flex-start;
 }
 
 article {
@@ -46,6 +47,14 @@ article {
 
 article h2 {
   margin-top: 0;
+  font-style: italic;
+}
+
+article .entry-date {
+  font-size: 14px;
+  font-style: italic;
+  color: #666;
+  text-align: right;
 }
 
 /* Images */
