@@ -9,8 +9,8 @@ Instagram archive: [@everydayaltar](https://instagram.com/everydayaltar)
 ## What it is
 
 - Static site hosted on GitHub Pages
-- Posts stored in Firebase Firestore (collection: `posts`, doc ID = `YYYY-MM-DD`)
-- Images stored in Firebase Storage under `posts/{date}/`
+- Posts stored in Firebase Firestore (collection: `entries`, auto-generated doc IDs)
+- Images stored in Firebase Storage under `entries/`
 - No server, no build step, no framework
 
 ---
@@ -117,21 +117,18 @@ Firestore collection `entries`, document ID = auto-generated:
   "date":      "Timestamp",
   "createdAt": "Timestamp",
   "caption":   "Caption or writing. Can be empty.",
-  "imgPaths":  ["posts/2026-09-06/0.jpg", "posts/2026-09-06/1.jpg"]
+  "imgPaths":  ["https://firebasestorage.googleapis.com/v0/b/...entries%2Ffilename.jpg?alt=media&token=..."]
 }
 ```
 
-`imgPaths` stores Storage paths (not download URLs). The feed resolves them at render time via `getDownloadURL`.
+`imgPaths` stores full Firebase Storage download URLs (with `?alt=media&token=...`). The feed uses them directly as `img.src` — no SDK resolution needed.
 
 Storage layout:
 
 ```
-posts/
-  2026-09-06/
-    0.jpg
-    1.jpg
-  2026-09-07/
-    0.jpg
+entries/
+  filename.jpg
+  another-image.jpg
 ```
 
 ---
@@ -148,9 +145,59 @@ For Auth to work (needed for the future write page), add these to:
 
 ---
 
-## Future: adding posts
+## Adding posts via Apple Shortcuts
 
-The write page (`/write`) is not yet built. Posts can currently be added via:
+New entries are created from an Apple Shortcut that talks directly to the Firestore REST API using Firebase email/password authentication. No backend or build step required.
 
-- The Firebase Console (manual Firestore document entry + Storage upload)
-- The import script (`scripts/import.mjs`, not yet implemented) for historical archive
+### One-time Firebase setup
+
+1. Firebase Console → Authentication → Sign-in method → enable **Email/Password**.
+2. Authentication → Users → **Add user** → your email + a strong password.
+3. In `firestore.rules`, replace `YOUR_OWNER_EMAIL` with that email, then paste the updated rules into the Firebase Console (Firestore → Rules tab).
+
+### One-time: get your refresh token
+
+Make this HTTP call once (curl, Insomnia, Postman, etc.) to get a long-lived refresh token:
+
+```
+POST https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=YOUR_API_KEY
+Content-Type: application/json
+
+{ "email": "you@example.com", "password": "yourpassword", "returnSecureToken": true }
+```
+
+`YOUR_API_KEY` is the `apiKey` value from `js/firebase.js`. Save the `refreshToken` from the response — store it as a text variable inside your Shortcut (not in the repo).
+
+### How the Shortcut works (two HTTP calls per post)
+
+**Call 1 — exchange the refresh token for a fresh ID token** (ID tokens expire after 1 hour; this keeps the Shortcut evergreen):
+
+```
+POST https://securetoken.googleapis.com/v1/token?key=YOUR_API_KEY
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=refresh_token&refresh_token=YOUR_REFRESH_TOKEN
+```
+
+Parse `id_token` from the JSON response.
+
+**Call 2 — create the Firestore document:**
+
+```
+POST https://firestore.googleapis.com/v1/projects/YOUR_PROJECT_ID/databases/(default)/documents/entries
+Authorization: Bearer {id_token from Call 1}
+Content-Type: application/json
+
+{
+  "fields": {
+    "date":      { "timestampValue": "<ISO8601 timestamp for the entry date>" },
+    "createdAt": { "timestampValue": "<ISO8601 timestamp for now>" },
+    "caption":   { "stringValue": "<your caption text>" },
+    "imgPaths":  { "arrayValue": { "values": [] } }
+  }
+}
+```
+
+Firestore auto-generates the document ID because the POST targets the collection path, not a specific document. Image upload support can be added later as a third call to the Firebase Storage REST API.
+
+`YOUR_PROJECT_ID` is the `projectId` value from `js/firebase.js`.

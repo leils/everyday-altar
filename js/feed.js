@@ -1,4 +1,4 @@
-import { db, storage } from "./firebase.js";
+import { db } from "./firebase.js";
 import {
   collection,
   query,
@@ -7,10 +7,9 @@ import {
   startAfter,
   getDocs
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
-import {
-  ref,
-  getDownloadURL
-} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-storage.js";
+
+// imgPaths stores full Firebase Storage download URLs (with token), so they
+// can be used directly as img.src with no transformation needed.
 
 const PAGE_SIZE = 20;
 
@@ -79,10 +78,20 @@ function formatDate(timestamp) {
 async function buildArticle(entry) {
   const article = document.createElement("article");
 
-  // Date heading — date is a Firestore Timestamp.
-  const heading = document.createElement("h2");
-  heading.textContent = formatDate(entry.date);
-  article.appendChild(heading);
+  // Images — resolve Storage paths to download URLs at render time.
+  if (entry.imgPaths && entry.imgPaths.length > 0) {
+    const imageWrap = document.createElement("div");
+    imageWrap.className = "post-images";
+
+    for (const url of entry.imgPaths) {
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = `Photo from ${formatDate(entry.date)}`;
+      imageWrap.appendChild(img);
+    }
+
+    article.appendChild(imageWrap);
+  }
 
   // Caption
   if (entry.caption) {
@@ -92,25 +101,11 @@ async function buildArticle(entry) {
     article.appendChild(captionEl);
   }
 
-  // Images — resolve Storage paths to download URLs at render time.
-  if (entry.imgPaths && entry.imgPaths.length > 0) {
-    const imageWrap = document.createElement("div");
-    imageWrap.className = "post-images";
-
-    for (const path of entry.imgPaths) {
-      try {
-        const url = await getDownloadURL(ref(storage, path));
-        const img = document.createElement("img");
-        img.src = url;
-        img.alt = `Photo from ${formatDate(entry.date)}`;
-        imageWrap.appendChild(img);
-      } catch (imgErr) {
-        console.error("Could not load image:", path, imgErr);
-      }
-    }
-
-    article.appendChild(imageWrap);
-  }
+  // Date heading — date is a Firestore Timestamp.
+  const dateLine = document.createElement("p");
+  dateLine.className = "entry-date";
+  dateLine.textContent = "{ " + entry.dayNo + " - " + formatDate(entry.date) + " }";
+  article.appendChild(dateLine);
 
   return article;
 }
